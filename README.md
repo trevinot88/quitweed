@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QuitWeed 🌱 · Sobriedad y Bienestar
 
-## Getting Started
+Una **PWA/WebApp** de seguimiento de sobriedad y bienestar para uso personal. Contador de días sobrio, check-ins diarios de mañana y noche, y un módulo SOS de emergencia con respiración guiada (box breathing 4-4-4-4).
 
-First, run the development server:
+> 🔒 **100% privado**: todos los datos se guardan en el `localStorage` de tu dispositivo. Sin bases de datos externas, sin servidores de datos. Exporta un backup JSON desde Ajustes cuando quieras.
+
+## ✨ Funcionalidades
+
+- **Dashboard**: contador central "Días Sobrio" con animación, tarjetas de *Dinero Ahorrado* y *Dosis no consumidas*, y banners de check-in según la hora del día.
+- **☀️ Check-in de Mañana** (2 min): ánimo y estado físico (1–10), intención del día y hábitos (agua con sal de mar, NAC, grounding / luz solar).
+- **🌙 Check-in de Noche** (5 min): switch Sobrio/Recaída, nivel de cravings (1–5), cómo superaste el peor momento, 3 victorias, notas y dinero ahorrado hoy.
+- **🆘 Módulo SOS**: modal a pantalla completa con temporizador de 5 minutos y orbe animado de respiración 4-4-4-4. Muestra la intención registrada por la mañana.
+- **📊 Historial**: todos tus registros con estado de ánimo, cravings y victorias.
+- **⚙️ Ajustes**: perfil, fecha de inicio, presupuesto diario, dosis evitadas/día, exportar/importar JSON y borrado de datos.
+- **📱 PWA**: instalable en iOS/Android ("Añadir a pantalla de inicio") con service worker e íconos.
+
+## 🛠️ Stack
+
+- [Next.js 16](https://nextjs.org/) (App Router, TypeScript, Turbopack)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/) (componentes estilizados glass/neón)
+- [framer-motion](https://www.framer.com/motion/) · [lucide-react](https://lucide.dev/)
+- `useLocalStorage` con `useSyncExternalStore` (sin errores de hidratación)
+
+## 🚀 Desarrollo local
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏗️ Producción
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## 🌍 Deploy
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+vercel
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+No requiere configuración adicional: todo vive en el cliente.
