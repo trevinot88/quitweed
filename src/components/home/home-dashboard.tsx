@@ -99,13 +99,16 @@ export function HomeDashboard() {
         onOpenChange={setMorningOpen}
         initial={m}
         onSave={saveMorning}
+        habits={data.profile.habits}
       />
       <NightForm
         open={nightOpen}
         onOpenChange={setNightOpen}
         initial={n}
         onSave={saveNight}
+        avoids={data.profile.avoids}
       />
+
     </div>
   );
 }

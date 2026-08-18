@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useApp } from "@/context/app-context";
+import { DEFAULT_AVOIDS, DEFAULT_HABITS } from "@/lib/constants";
 import { todayKey } from "@/lib/date";
 
 export function Onboarding() {
@@ -23,8 +24,11 @@ export function Onboarding() {
       sobrietyStartDate: startDate,
       dailyBudget: Math.max(0, Number(budget) || 0),
       dosesPerDay: Math.max(0, Number(doses) || 0),
+      habits: DEFAULT_HABITS,
+      avoids: DEFAULT_AVOIDS,
     });
   };
+
 
   const canNext =
     step === 0 ? name.trim().length > 0 : step === 1 ? Boolean(startDate) : true;

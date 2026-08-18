@@ -8,15 +8,23 @@ import {
   type ReactNode,
 } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { STORAGE_KEY } from "@/lib/constants";
+import { DEFAULT_AVOIDS, DEFAULT_HABITS, STORAGE_KEY } from "@/lib/constants";
 import { todayKey } from "@/lib/date";
-import type { AppData, MorningLog, NightLog, Profile } from "@/lib/types";
+import type {
+  AppData,
+  HabitItem,
+  MorningLog,
+  NightLog,
+  Profile,
+} from "@/lib/types";
 
 interface AppContextValue {
   /** true cuando los datos ya fueron cargados del localStorage */
   ready: boolean;
   data: AppData | null;
   setProfile: (profile: Profile) => void;
+  saveHabits: (habits: HabitItem[]) => void;
+  saveAvoids: (avoids: HabitItem[]) => void;
   saveMorning: (log: MorningLog) => void;
   saveNight: (log: NightLog) => void;
   importData: (data: AppData) => void;
@@ -39,6 +47,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setProfile = useCallback(
     (profile: Profile) => {
       setData((prev) => ({ ...prev, profile }));
+    },
+    [setData]
+  );
+
+  const saveHabits = useCallback(
+    (habits: HabitItem[]) => {
+      setData((prev) => {
+        if (!prev.profile) return prev;
+        return { ...prev, profile: { ...prev.profile, habits } };
+      });
+    },
+    [setData]
+  );
+
+  const saveAvoids = useCallback(
+    (avoids: HabitItem[]) => {
+      setData((prev) => {
+        if (!prev.profile) return prev;
+        return { ...prev, profile: { ...prev.profile, avoids } };
+      });
     },
     [setData]
   );
@@ -77,8 +105,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const importData = useCallback(
     (incoming: AppData) => {
+      // Compatibilidad: perfiles v1 sin hábitos/evitaciones personalizados
+      const profile = incoming.profile
+        ? {
+            ...incoming.profile,
+            habits: incoming.profile.habits ?? DEFAULT_HABITS,
+            avoids: incoming.profile.avoids ?? DEFAULT_AVOIDS,
+          }
+        : null;
       setData({
-        profile: incoming.profile,
+        profile,
         records: incoming.records ?? {},
       });
     },
@@ -94,12 +130,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ready,
       data,
       setProfile,
+      saveHabits,
+      saveAvoids,
       saveMorning,
       saveNight,
       importData,
       resetAll,
     }),
-    [ready, data, setProfile, saveMorning, saveNight, importData, resetAll]
+    [
+      ready,
+      data,
+      setProfile,
+      saveHabits,
+      saveAvoids,
+      saveMorning,
+      saveNight,
+      importData,
+      resetAll,
+    ]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

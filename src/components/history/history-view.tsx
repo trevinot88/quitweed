@@ -13,7 +13,11 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useApp } from "@/context/app-context";
-import { recordStats } from "@/lib/selectors";
+import {
+  morningHabitsDone,
+  nightAvoidsDone,
+  recordStats,
+} from "@/lib/selectors";
 import { formatKeyFull, formatMoney } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +29,8 @@ export function HistoryView() {
   const records = Object.values(data.records).sort((a, b) =>
     b.date.localeCompare(a.date)
   );
+  const habits = data.profile?.habits ?? [];
+  const avoids = data.profile?.avoids ?? [];
 
   return (
     <div className="space-y-4">
@@ -56,6 +62,10 @@ export function HistoryView() {
             const hasMorning = Boolean(rec.morning);
             const hasNight = Boolean(rec.night);
             const soberNight = rec.night?.sober;
+            const doneHabits = morningHabitsDone(rec.morning, habits);
+            const doneAvoids = nightAvoidsDone(rec.night, avoids);
+            const habitsMarked = habits.filter((h) => doneHabits[h.id]);
+            const avoidsMarked = avoids.filter((a) => doneAvoids[a.id]);
             return (
               <motion.div
                 key={rec.date}
@@ -103,7 +113,7 @@ export function HistoryView() {
                         </span>
                       ) : (
                         <span className="rounded-full bg-white/[0.05] px-2.5 py-1 text-[11px] text-zinc-500">
-                          — 
+                          —
                         </span>
                       )}
                       {rec.night && rec.night.moneySaved > 0 && (
@@ -113,6 +123,34 @@ export function HistoryView() {
                       )}
                     </div>
                   </div>
+
+                  {/* Hábitos cumplidos */}
+                  {habitsMarked.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {habitsMarked.map((h) => (
+                        <span
+                          key={h.id}
+                          className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300"
+                        >
+                          <span>{h.emoji ?? "✅"}</span> {h.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Evitaciones cumplidas */}
+                  {avoidsMarked.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {avoidsMarked.map((a) => (
+                        <span
+                          key={a.id}
+                          className="flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-1 text-[11px] font-medium text-red-300"
+                        >
+                          <span>{a.emoji ?? "🚫"}</span> Evité {a.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </Card>
               </motion.div>
             );

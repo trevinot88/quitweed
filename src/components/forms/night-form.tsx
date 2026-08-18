@@ -9,9 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CRAVING_LABELS } from "@/lib/constants";
 import { todayKey } from "@/lib/date";
-import type { NightLog } from "@/lib/types";
+import { nightAvoidsDone } from "@/lib/selectors";
+import type { HabitItem, NightLog } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface NightFormProps {
@@ -19,15 +21,17 @@ interface NightFormProps {
   onOpenChange: (open: boolean) => void;
   initial?: NightLog;
   onSave: (log: NightLog) => void;
+  avoids: HabitItem[];
 }
 
-export function NightForm({ open, onOpenChange, initial, onSave }: NightFormProps) {
+export function NightForm({ open, onOpenChange, initial, onSave, avoids }: NightFormProps) {
   const [sober, setSober] = React.useState(initial?.sober ?? true);
   const [craving, setCraving] = React.useState(initial?.cravingLevel ?? 2);
   const [worstMoment, setWorstMoment] = React.useState(initial?.worstMoment ?? "");
   const [victories, setVictories] = React.useState(initial?.victories ?? "");
   const [notes, setNotes] = React.useState(initial?.notes ?? "");
   const [money, setMoney] = React.useState(initial?.moneySaved ?? 0);
+  const [avoidsDone, setAvoidsDone] = React.useState<Record<string, boolean>>({});
 
   // Reiniciar el formulario al abrir (ajuste de estado durante render)
   const [wasOpen, setWasOpen] = React.useState(open);
@@ -40,9 +44,12 @@ export function NightForm({ open, onOpenChange, initial, onSave }: NightFormProp
       setVictories(initial?.victories ?? "");
       setNotes(initial?.notes ?? "");
       setMoney(initial?.moneySaved ?? 0);
+      setAvoidsDone(nightAvoidsDone(initial, avoids));
     }
   }
 
+  const toggleAvoid = (id: string) =>
+    setAvoidsDone((a) => ({ ...a, [id]: !a[id] }));
 
   const submit = () => {
     onSave({
@@ -53,6 +60,7 @@ export function NightForm({ open, onOpenChange, initial, onSave }: NightFormProp
       victories: victories.trim(),
       notes: notes.trim(),
       moneySaved: Math.max(0, Number(money) || 0),
+      avoidsDone,
       completedAt: new Date().toISOString(),
     });
     onOpenChange(false);
@@ -128,6 +136,63 @@ export function NightForm({ open, onOpenChange, initial, onSave }: NightFormProp
             <div className="mt-2 flex justify-between text-[11px] text-zinc-500">
               <span>Sin cravings</span>
               <span>Muy intensos</span>
+            </div>
+          </div>
+
+          {/* Evitaciones */}
+          <div>
+            <Label className="text-zinc-300">Hoy evité</Label>
+            <div className="mt-3 space-y-2">
+              {avoids.length === 0 && (
+                <p className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-xs text-zinc-500">
+                  No tienes evitaciones configuradas. Agrégalas desde Ajustes.
+                </p>
+              )}
+              {avoids.map((a) => {
+                const checked = Boolean(avoidsDone[a.id]);
+                const accent = a.color ?? "#f87171";
+                return (
+                  <motion.button
+                    key={a.id}
+                    type="button"
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => toggleAvoid(a.id)}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors",
+                      checked
+                        ? "border-emerald-400/30 bg-emerald-500/[0.08]"
+                        : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"
+                    )}
+                    style={
+                      checked
+                        ? { borderColor: `${accent}66`, backgroundColor: `${accent}14` }
+                        : undefined
+                    }
+                  >
+                    <span
+                      className={cn(
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base",
+                        checked ? "bg-white/[0.1]" : "bg-white/[0.05]"
+                      )}
+                      style={checked ? { color: accent } : undefined}
+                    >
+                      {a.emoji ?? "🚫"}
+                    </span>
+                    <span className="flex-1">
+                      <span
+                        className={cn("block text-sm font-medium", checked ? "text-emerald-200" : "text-zinc-200")}
+                        style={checked ? { color: accent } : undefined}
+                      >
+                        {a.label}
+                      </span>
+                      {a.description && (
+                        <span className="block text-xs text-zinc-500">{a.description}</span>
+                      )}
+                    </span>
+                    <Checkbox checked={checked} onCheckedChange={() => toggleAvoid(a.id)} />
+                  </motion.button>
+                );
+              })}
             </div>
           </div>
 

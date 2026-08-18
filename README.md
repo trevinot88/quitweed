@@ -7,12 +7,14 @@ Una **PWA/WebApp** de seguimiento de sobriedad y bienestar para uso personal. Co
 ## ✨ Funcionalidades
 
 - **Dashboard**: contador central "Días Sobrio" con animación, tarjetas de *Dinero Ahorrado* y *Dosis no consumidas*, y banners de check-in según la hora del día.
-- **☀️ Check-in de Mañana** (2 min): ánimo y estado físico (1–10), intención del día y hábitos (agua con sal de mar, NAC, grounding / luz solar).
-- **🌙 Check-in de Noche** (5 min): switch Sobrio/Recaída, nivel de cravings (1–5), cómo superaste el peor momento, 3 victorias, notas y dinero ahorrado hoy.
+- **☀️ Check-in de Mañana** (2 min): ánimo y estado físico (1–10), intención del día y tus **hábitos personalizables** (por defecto: agua con sal de mar, NAC, grounding / luz solar).
+- **🌙 Check-in de Noche** (5 min): switch Sobrio/Recaída, nivel de cravings (1–5), cómo superaste el peor momento, 3 victorias, notas, dinero ahorrado hoy y tus **evitaciones personalizables** (fumar, tomar, porno, etc.).
 - **🆘 Módulo SOS**: modal a pantalla completa con temporizador de 5 minutos y orbe animado de respiración 4-4-4-4. Muestra la intención registrada por la mañana.
-- **📊 Historial**: todos tus registros con estado de ánimo, cravings y victorias.
-- **⚙️ Ajustes**: perfil, fecha de inicio, presupuesto diario, dosis evitadas/día, exportar/importar JSON y borrado de datos.
+- **📈 Progreso**: calendario mensual con colores (verde = sobrio, rojo = recaída, ámbar = parcial), dashboard de estadísticas: días sobrio, tasa de éxito, mejor racha, constancia general, cumplimiento de hábitos y evitaciones, y resumen del viaje.
+- **📊 Historial**: todos tus registros con estado de ánimo, cravings, victorias y los hábitos/evitaciones cumplidos cada día.
+- **⚙️ Ajustes**: perfil, fecha de inicio, presupuesto diario, dosis evitadas/día, **editor de hábitos y evitaciones** (agrega, edita o elimina con emoji), exportar/importar JSON y borrado de datos.
 - **📱 PWA**: instalable en iOS/Android ("Añadir a pantalla de inicio") con service worker e íconos.
+
 
 ## 🛠️ Stack
 

@@ -2,16 +2,17 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { Droplets, Pill, Sun, Sunrise } from "lucide-react";
+import { Sunrise } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { HABIT_ITEMS, MOOD_EMOJIS } from "@/lib/constants";
+import { MOOD_EMOJIS } from "@/lib/constants";
 import { todayKey } from "@/lib/date";
-import type { MorningLog } from "@/lib/types";
+import { morningHabitsDone } from "@/lib/selectors";
+import type { HabitItem, MorningLog } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface MorningFormProps {
@@ -19,17 +20,14 @@ interface MorningFormProps {
   onOpenChange: (open: boolean) => void;
   initial?: MorningLog;
   onSave: (log: MorningLog) => void;
+  habits: HabitItem[];
 }
 
-export function MorningForm({ open, onOpenChange, initial, onSave }: MorningFormProps) {
+export function MorningForm({ open, onOpenChange, initial, onSave, habits }: MorningFormProps) {
   const [mood, setMood] = React.useState(initial?.mood ?? 7);
   const [physical, setPhysical] = React.useState(initial?.physical ?? 7);
   const [intention, setIntention] = React.useState(initial?.intention ?? "");
-  const [habits, setHabits] = React.useState({
-    seaSaltWater: initial?.seaSaltWater ?? false,
-    nac: initial?.nac ?? false,
-    grounding: initial?.grounding ?? false,
-  });
+  const [habitsDone, setHabitsDone] = React.useState<Record<string, boolean>>({});
 
   // Reiniciar el formulario al abrir (ajuste de estado durante render)
   const [wasOpen, setWasOpen] = React.useState(open);
@@ -39,16 +37,12 @@ export function MorningForm({ open, onOpenChange, initial, onSave }: MorningForm
       setMood(initial?.mood ?? 7);
       setPhysical(initial?.physical ?? 7);
       setIntention(initial?.intention ?? "");
-      setHabits({
-        seaSaltWater: initial?.seaSaltWater ?? false,
-        nac: initial?.nac ?? false,
-        grounding: initial?.grounding ?? false,
-      });
+      setHabitsDone(morningHabitsDone(initial, habits));
     }
   }
 
-  const toggleHabit = (id: keyof typeof habits) =>
-    setHabits((h) => ({ ...h, [id]: !h[id] }));
+  const toggleHabit = (id: string) =>
+    setHabitsDone((h) => ({ ...h, [id]: !h[id] }));
 
   const submit = () => {
     onSave({
@@ -56,7 +50,7 @@ export function MorningForm({ open, onOpenChange, initial, onSave }: MorningForm
       mood,
       physical,
       intention: intention.trim(),
-      ...habits,
+      habitsDone,
       completedAt: new Date().toISOString(),
     });
     onOpenChange(false);
@@ -122,13 +116,14 @@ export function MorningForm({ open, onOpenChange, initial, onSave }: MorningForm
           <div>
             <Label className="text-zinc-300">Hábitos de hoy</Label>
             <div className="mt-3 space-y-2">
-              {HABIT_ITEMS.map((h) => {
-                const icons = {
-                  seaSaltWater: <Droplets className="h-4 w-4" />,
-                  nac: <Pill className="h-4 w-4" />,
-                  grounding: <Sun className="h-4 w-4" />,
-                } as const;
-                const checked = habits[h.id];
+              {habits.length === 0 && (
+                <p className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-xs text-zinc-500">
+                  No tienes hábitos configurados. Agrégalos desde Ajustes.
+                </p>
+              )}
+              {habits.map((h) => {
+                const checked = Boolean(habitsDone[h.id]);
+                const accent = h.color ?? "#34d399";
                 return (
                   <motion.button
                     key={h.id}
@@ -141,22 +136,31 @@ export function MorningForm({ open, onOpenChange, initial, onSave }: MorningForm
                         ? "border-emerald-400/30 bg-emerald-500/[0.08]"
                         : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"
                     )}
+                    style={
+                      checked
+                        ? { borderColor: `${accent}66`, backgroundColor: `${accent}14` }
+                        : undefined
+                    }
                   >
                     <span
                       className={cn(
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                        checked
-                          ? "bg-emerald-500/20 text-emerald-300"
-                          : "bg-white/[0.05] text-zinc-400"
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base",
+                        checked ? "bg-white/[0.1]" : "bg-white/[0.05]"
                       )}
+                      style={checked ? { color: accent } : undefined}
                     >
-                      {icons[h.id]}
+                      {h.emoji ?? "✅"}
                     </span>
                     <span className="flex-1">
-                      <span className={cn("block text-sm font-medium", checked ? "text-emerald-200" : "text-zinc-200")}>
+                      <span
+                        className={cn("block text-sm font-medium", checked ? "text-emerald-200" : "text-zinc-200")}
+                        style={checked ? { color: accent } : undefined}
+                      >
                         {h.label}
                       </span>
-                      <span className="block text-xs text-zinc-500">{h.description}</span>
+                      {h.description && (
+                        <span className="block text-xs text-zinc-500">{h.description}</span>
+                      )}
                     </span>
                     <Checkbox checked={checked} onCheckedChange={() => toggleHabit(h.id)} />
                   </motion.button>

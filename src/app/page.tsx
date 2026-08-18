@@ -4,8 +4,10 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { Shell, type Tab } from "@/components/layout/shell";
 import { HomeDashboard } from "@/components/home/home-dashboard";
+import { ProgressView } from "@/components/progress/progress-view";
 import { HistoryView } from "@/components/history/history-view";
 import { SettingsPanel } from "@/components/settings/settings-panel";
+
 import { Onboarding } from "@/components/onboarding/onboarding";
 import { SosFab } from "@/components/home/sos-fab";
 import { SosModal } from "@/components/sos/sos-modal";
@@ -44,8 +46,10 @@ export default function HomePage() {
     <>
       <Shell activeTab={tab} onChange={setTab}>
         {tab === "home" && <HomeDashboard />}
+        {tab === "progress" && <ProgressView />}
         {tab === "history" && <HistoryView />}
         {tab === "settings" && <SettingsPanel />}
+
       </Shell>
 
       <SosFab onClick={() => setSosOpen(true)} />

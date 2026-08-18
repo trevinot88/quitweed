@@ -1,10 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { History, Home, Settings } from "lucide-react";
+import { BarChart3, History, Home, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type Tab = "home" | "history" | "settings";
+export type Tab = "home" | "progress" | "history" | "settings";
 
 interface ShellProps {
   activeTab: Tab;
@@ -14,6 +14,7 @@ interface ShellProps {
 
 const TABS: { id: Tab; label: string; icon: typeof Home }[] = [
   { id: "home", label: "Inicio", icon: Home },
+  { id: "progress", label: "Progreso", icon: BarChart3 },
   { id: "history", label: "Historial", icon: History },
   { id: "settings", label: "Ajustes", icon: Settings },
 ];

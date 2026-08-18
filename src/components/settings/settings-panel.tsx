@@ -4,7 +4,9 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import {
   Banknote,
+  Ban,
   CalendarDays,
+  CheckCircle2,
   Database,
   Download,
   Package,
@@ -13,18 +15,21 @@ import {
   Upload,
   User,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog } from "@/components/ui/dialog";
+import { HabitEditor } from "@/components/settings/habit-editor";
 import { useApp } from "@/context/app-context";
 import { todayKey } from "@/lib/date";
 import type { AppData, Profile } from "@/lib/types";
 
 export function SettingsPanel() {
-  const { data, setProfile, importData, resetAll } = useApp();
+  const { data, setProfile, saveHabits, saveAvoids, importData, resetAll } = useApp();
   const profile = data?.profile;
+
 
   const [name, setName] = React.useState(profile?.name ?? "");
   const [startDate, setStartDate] = React.useState(profile?.sobrietyStartDate ?? todayKey());
@@ -54,11 +59,14 @@ export function SettingsPanel() {
       sobrietyStartDate: startDate,
       dailyBudget: Math.max(0, Number(budget) || 0),
       dosesPerDay: Math.max(0, Number(doses) || 0),
+      habits: profile?.habits ?? [],
+      avoids: profile?.avoids ?? [],
     };
     setProfile(p);
     setStatus({ type: "ok", msg: "Perfil guardado ✓" });
     setTimeout(() => setStatus(null), 2500);
   };
+
 
   const exportData = () => {
     if (!data) return;
@@ -167,8 +175,45 @@ export function SettingsPanel() {
         </div>
       </Card>
 
+      {/* Hábitos personalizables */}
+      <Card className="p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+          <h3 className="text-sm font-semibold text-zinc-200">Mis hábitos de la mañana</h3>
+        </div>
+        <p className="mb-4 text-xs text-zinc-500">
+          Elige qué actividades marcas en tu check-in de la mañana. Escribe lo que quieras: agua con sal, NAC, entrenar, meditar…
+        </p>
+        <HabitEditor
+          title="Hábitos"
+          description="Actividades que quieres cumplir en la mañana"
+          items={profile?.habits ?? []}
+          onChange={saveHabits}
+          isHabit
+        />
+      </Card>
+
+      {/* Evitaciones personalizables */}
+      <Card className="p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <Ban className="h-4 w-4 text-red-400" />
+          <h3 className="text-sm font-semibold text-zinc-200">Lo que quiero evitar</h3>
+        </div>
+        <p className="mb-4 text-xs text-zinc-500">
+          Define qué actividades marcas como "hoy evité": fumar, tomar, porno o lo que elijas.
+        </p>
+        <HabitEditor
+          title="Evitaciones"
+          description="Actividades que quieres evitar"
+          items={profile?.avoids ?? []}
+          onChange={saveAvoids}
+          isHabit={false}
+        />
+      </Card>
+
       {/* Datos */}
       <Card className="p-5">
+
         <div className="mb-4 flex items-center gap-2">
           <Database className="h-4 w-4 text-emerald-400" />
           <h3 className="text-sm font-semibold text-zinc-200">Respaldo de datos</h3>
