@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CRAVING_LABELS } from "@/lib/constants";
+import { CRAVING_LABELS, MAIN_HABIT } from "@/lib/constants";
 import { todayKey } from "@/lib/date";
 import { nightAvoidsDone } from "@/lib/selectors";
 import type { HabitItem, NightLog } from "@/lib/types";
@@ -52,7 +52,17 @@ export function NightForm({ open, onOpenChange, initial, onSave, avoids = [] }: 
   const toggleAvoid = (id: string) =>
     setAvoidsDone((a) => ({ ...a, [id]: !a[id] }));
 
+  // "Free of weed" está sincronizado con el switch principal:
+  // si no fumaste (sober=true) queda marcado como evitado, y si fumaste no.
+  const mainAvoidChecked = sober;
+  const toggleMainAvoid = () => setSober((s) => !s);
+
   const submit = () => {
+    const allAvoidsDone = {
+      ...avoidsDone,
+      // El hábito principal siempre refleja el estado de sobriedad del día
+      [MAIN_HABIT.id]: sober,
+    };
     onSave({
       date: todayKey(),
       sober,
@@ -61,7 +71,7 @@ export function NightForm({ open, onOpenChange, initial, onSave, avoids = [] }: 
       victories: victories.trim(),
       notes: notes.trim(),
       moneySaved: Math.max(0, Number(money) || 0),
-      avoidsDone,
+      avoidsDone: allAvoidsDone,
       completedAt: new Date().toISOString(),
     });
     onOpenChange(false);
@@ -82,7 +92,7 @@ export function NightForm({ open, onOpenChange, initial, onSave, avoids = [] }: 
         </div>
 
         <div className="space-y-6">
-          {/* Switch sobrio */}
+          {/* Switch Free of weed (hábito principal) */}
           <motion.div
             animate={{ boxShadow: sober ? "0 0 32px rgba(52,211,153,0.15)" : "0 0 32px rgba(248,113,113,0.15)" }}
             className={cn(
@@ -93,17 +103,15 @@ export function NightForm({ open, onOpenChange, initial, onSave, avoids = [] }: 
             )}
           >
             <div className="flex items-center gap-3">
-              {sober ? (
-                <CheckCircle2 className="h-8 w-8 text-emerald-400" />
-              ) : (
-                <XCircle className="h-8 w-8 text-red-400" />
-              )}
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-lg">
+                🌿
+              </span>
               <div>
                 <p className={cn("text-sm font-semibold", sober ? "text-emerald-200" : "text-red-300")}>
-                  {sober ? "Sobrio el día de hoy" : "Recaída registrada"}
+                  {sober ? "Hoy NO fumé" : "Hoy SÍ fumé"}
                 </p>
                 <p className="text-xs text-zinc-400">
-                  {sober ? "Increíble. Sigue así 💪" : "Mañana es una nueva oportunidad. Sé amable contigo."}
+                  {sober ? "Free of weed ✓ · Increíble, sigue así 💪" : "Free of weed ✗ · Mañana es una nueva oportunidad, sé amable contigo."}
                 </p>
               </div>
             </div>
@@ -144,6 +152,45 @@ export function NightForm({ open, onOpenChange, initial, onSave, avoids = [] }: 
           <div>
             <Label className="text-zinc-300">Hoy evité</Label>
             <div className="mt-3 space-y-2">
+              {/* Hábito principal "Free of weed" sincronizado con el switch */}
+              <motion.button
+                key={MAIN_HABIT.id}
+                type="button"
+                whileTap={{ scale: 0.98 }}
+                onClick={toggleMainAvoid}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors",
+                  mainAvoidChecked
+                    ? "border-emerald-400/30 bg-emerald-500/[0.08]"
+                    : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"
+                )}
+                style={
+                  mainAvoidChecked
+                    ? { borderColor: `${MAIN_HABIT.color}66`, backgroundColor: `${MAIN_HABIT.color}14` }
+                    : undefined
+                }
+              >
+                <span
+                  className={cn(
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base",
+                    mainAvoidChecked ? "bg-white/[0.1]" : "bg-white/[0.05]"
+                  )}
+                  style={mainAvoidChecked ? { color: MAIN_HABIT.color } : undefined}
+                >
+                  {MAIN_HABIT.emoji ?? "🌿"}
+                </span>
+                <span className="flex-1">
+                  <span
+                    className={cn("block text-sm font-medium", mainAvoidChecked ? "text-emerald-200" : "text-zinc-200")}
+                    style={mainAvoidChecked ? { color: MAIN_HABIT.color } : undefined}
+                  >
+                    {MAIN_HABIT.label}
+                  </span>
+                  <span className="block text-xs text-zinc-500">{MAIN_HABIT.description}</span>
+                </span>
+                <Checkbox checked={mainAvoidChecked} onCheckedChange={toggleMainAvoid} />
+              </motion.button>
+
               {avoids.length === 0 && (
                 <p className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-xs text-zinc-500">
                   No tienes evitaciones configuradas. Agrégalas desde Ajustes.
