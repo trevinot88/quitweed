@@ -8,7 +8,12 @@ import {
   type ReactNode,
 } from "react";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { DEFAULT_AVOIDS, DEFAULT_HABITS, STORAGE_KEY } from "@/lib/constants";
+import {
+  DEFAULT_AVOIDS,
+  DEFAULT_HABITS,
+  STORAGE_KEY,
+  withMainHabit,
+} from "@/lib/constants";
 import { todayKey } from "@/lib/date";
 import type {
   AppData,
@@ -29,7 +34,10 @@ interface AppContextValue {
   saveNight: (log: NightLog) => void;
   importData: (data: AppData) => void;
   resetAll: () => void;
+  /** Reinicia el progreso: contador a hoy y registros vacíos. Conserva perfil, hábitos y evitaciones. */
+  resetProgress: () => void;
 }
+
 
 const DEFAULT_DATA: AppData = {
   profile: null,
@@ -47,9 +55,12 @@ function normalizeData(data: AppData | null | undefined): AppData {
   const profile = data.profile
     ? {
         ...data.profile,
-        habits: Array.isArray(data.profile.habits)
-          ? data.profile.habits
-          : DEFAULT_HABITS,
+        // El hábito principal "Free of weed" siempre presente (fijo)
+        habits: withMainHabit(
+          Array.isArray(data.profile.habits)
+            ? data.profile.habits
+            : DEFAULT_HABITS
+        ),
         avoids: Array.isArray(data.profile.avoids)
           ? data.profile.avoids
           : DEFAULT_AVOIDS,
@@ -82,7 +93,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (habits: HabitItem[]) => {
       setData((prev) => {
         if (!prev.profile) return prev;
-        return { ...prev, profile: { ...prev.profile, habits } };
+        // El hábito principal "Free of weed" no puede eliminarse desde Ajustes
+        return {
+          ...prev,
+          profile: { ...prev.profile, habits: withMainHabit(habits) },
+        };
       });
     },
     [setData]
@@ -136,7 +151,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const profile = incoming.profile
         ? {
             ...incoming.profile,
-            habits: incoming.profile.habits ?? DEFAULT_HABITS,
+            habits: withMainHabit(
+              incoming.profile.habits ?? DEFAULT_HABITS
+            ),
             avoids: incoming.profile.avoids ?? DEFAULT_AVOIDS,
           }
         : null;
@@ -152,6 +169,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setData(DEFAULT_DATA);
   }, [setData]);
 
+  const resetProgress = useCallback(() => {
+    setData((prev) => {
+      if (!prev.profile) return prev;
+      // Reinicia el progreso de cero: borra el historial (registros diarios),
+      // pone el contador de "Días de libertad" en 0 y reinicia la fecha de
+      // inicio a hoy. Conserva perfil, hábitos y evitaciones configurados.
+      return {
+        ...prev,
+        profile: {
+          ...prev.profile,
+          sobrietyStartDate: todayKey(),
+        },
+        records: {},
+      };
+    });
+  }, [setData]);
+
   const value = useMemo<AppContextValue>(
     () => ({
       ready,
@@ -163,6 +197,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       saveNight,
       importData,
       resetAll,
+      resetProgress,
     }),
     [
       ready,
@@ -174,6 +209,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       saveNight,
       importData,
       resetAll,
+      resetProgress,
     ]
   );
 

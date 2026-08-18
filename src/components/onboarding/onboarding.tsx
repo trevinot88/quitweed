@@ -8,30 +8,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useApp } from "@/context/app-context";
 import { DEFAULT_AVOIDS, DEFAULT_HABITS } from "@/lib/constants";
-import { todayKey } from "@/lib/date";
+import { addDays, parseDateKey, toDateKey, todayKey } from "@/lib/date";
 
 export function Onboarding() {
   const { setProfile } = useApp();
   const [step, setStep] = React.useState(0);
   const [name, setName] = React.useState("");
+  const [soberDays, setSoberDays] = React.useState(0);
   const [startDate, setStartDate] = React.useState(todayKey());
   const [budget, setBudget] = React.useState(300);
   const [doses, setDoses] = React.useState(1);
 
+  // Actualiza la fecha de inicio según los días sobrios actuales
+  const handleSoberDaysChange = (value: number) => {
+    // 0 es una opción válida: el usuario empieza hoy
+    const n = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+    setSoberDays(n);
+    setStartDate(toDateKey(addDays(parseDateKey(todayKey()), -n)));
+  };
+
   const finish = () => {
+    const derivedStart = toDateKey(
+      addDays(parseDateKey(todayKey()), -soberDays)
+    );
     setProfile({
       name: name.trim() || "Guerrero",
-      sobrietyStartDate: startDate,
+      sobrietyStartDate: startDate || derivedStart,
       dailyBudget: Math.max(0, Number(budget) || 0),
       dosesPerDay: Math.max(0, Number(doses) || 0),
       habits: DEFAULT_HABITS,
       avoids: DEFAULT_AVOIDS,
     });
   };
-
-
-  const canNext =
-    step === 0 ? name.trim().length > 0 : step === 1 ? Boolean(startDate) : true;
 
   const steps = [
     {
@@ -55,18 +63,59 @@ export function Onboarding() {
     },
     {
       icon: <Leaf className="h-5 w-5" />,
-      title: "¿Desde cuándo estás sobrio?",
-      subtitle: "La fecha en que comenzaste tu nuevo camino.",
+      title: "¿Cuántos días llevas sobrio?",
+      subtitle: "Puedes escribir 0 si hoy es tu primer día.",
       content: (
-        <div className="relative">
-          <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-          <Input
-            type="date"
-            value={startDate}
-            max={todayKey()}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="h-12 pl-9 text-center"
-          />
+        <div className="space-y-4">
+          <div>
+            <Label className="text-center text-sm text-zinc-400">
+              Días sobrio actuales
+            </Label>
+            <Input
+              type="number"
+              min={0}
+              step={1}
+              inputMode="numeric"
+              value={soberDays}
+              onChange={(e) => handleSoberDaysChange(Number(e.target.value))}
+              className="mt-2 h-12 text-center text-lg"
+              placeholder="0"
+            />
+            <p className="mt-2 text-center text-xs text-zinc-500">
+              {soberDays === 0
+                ? "Comenzamos hoy: cada día cuenta 🌱"
+                : `Inicio calculado: ${toDateKey(addDays(parseDateKey(todayKey()), -soberDays))}`}
+            </p>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+            <Label className="text-[11px] text-zinc-400">
+              O elige la fecha exacta
+            </Label>
+            <div className="relative mt-1.5">
+              <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+              <Input
+                type="date"
+                value={startDate}
+                max={todayKey()}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  // Si editas la fecha, recalcula los días
+                  if (e.target.value) {
+                    const days = Math.max(
+                      0,
+                      Math.round(
+                        (parseDateKey(todayKey()).getTime() -
+                          parseDateKey(e.target.value).getTime()) /
+                          86_400_000
+                      )
+                    );
+                    setSoberDays(days);
+                  }
+                }}
+                className="h-12 pl-9 text-center"
+              />
+            </div>
+          </div>
         </div>
       ),
     },
@@ -77,7 +126,9 @@ export function Onboarding() {
       content: (
         <div className="space-y-4">
           <div>
-            <Label className="text-center text-zinc-400 text-sm">Gasto diario estimado (MXN)</Label>
+            <Label className="text-center text-sm text-zinc-400">
+              Gasto diario estimado (MXN)
+            </Label>
             <Input
               type="number"
               min={0}
@@ -88,7 +139,9 @@ export function Onboarding() {
             />
           </div>
           <div>
-            <Label className="text-center text-zinc-400 text-sm">Dosis/gramos por día</Label>
+            <Label className="text-center text-sm text-zinc-400">
+              Dosis/gramos por día
+            </Label>
             <Input
               type="number"
               min={0}
@@ -104,6 +157,12 @@ export function Onboarding() {
   ];
 
   const current = steps[step];
+  const canNext =
+    step === 0
+      ? name.trim().length > 0
+      : step === 1
+        ? true // 0 es válido
+        : true;
 
   return (
     <div className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-10">
@@ -186,7 +245,7 @@ export function Onboarding() {
 
         {step === 1 && (
           <p className="mt-4 text-center text-[11px] text-zinc-600">
-            ¿No sabes la fecha exacta? Usa hoy: cada día cuenta.
+            ¿No sabes los días exactos? Usa 0 y empieza hoy: cada día cuenta.
           </p>
         )}
       </div>

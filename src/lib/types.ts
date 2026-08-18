@@ -9,7 +9,11 @@ export interface HabitItem {
   emoji?: string;
   /** Color de acento (hex) */
   color?: string;
+  /** true = hábito principal fijo y obligatorio (isFixed / isMandatory),
+   * no se puede eliminar ni desactivar desde Ajustes. */
+  fixed?: boolean;
 }
+
 
 export interface Profile {
   /** Nombre del usuario */

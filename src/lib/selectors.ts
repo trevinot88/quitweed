@@ -19,23 +19,48 @@ export function todayNight(data: AppData, dateKey = todayKey()): NightLog | unde
   return todayRecord(data, dateKey).night;
 }
 
-/** Días de sobriedad acumulados hasta hoy (inclusivo) */
-export function soberDays(data: AppData): number {
+/* ---------------- Días de libertad (racha) ---------------- */
+
+/**
+ * Racha de "días de libertad": días consecutivos con check-in nocturno
+ * registrado como sobrio (sober=true), contando desde el registro nocturno
+ * más reciente hacia atrás.
+ * - Cada noche registrada como sobria suma +1.
+ * - Una recaída (sober=false) reinicia la racha a 0.
+ * - Sin registros nocturnos el valor es 0.
+ */
+export function streakForDay(data: AppData, endKey: string): number {
   if (!data.profile) return 0;
-  const days = daysBetween(data.profile.sobrietyStartDate, todayKey());
-  return Math.max(0, days + 1);
+  const nightDates = Object.values(data.records)
+    .filter((r) => r.night && r.date <= endKey)
+    .map((r) => r.date)
+    .sort()
+    .reverse();
+
+  let streak = 0;
+  for (const date of nightDates) {
+    const night = data.records[date]?.night;
+    if (!night || !night.sober) break;
+    streak++;
+  }
+  return streak;
 }
 
-/** Dinero ahorrado según el presupuesto diario configurado */
+/** "Días de libertad" actuales (racha de noches sobrias consecutivas) */
+export function freedomDays(data: AppData): number {
+  return streakForDay(data, todayKey());
+}
+
+/** Dinero ahorrado según el presupuesto diario configurado (racha actual) */
 export function moneySaved(data: AppData): number {
   if (!data.profile) return 0;
-  return soberDays(data) * data.profile.dailyBudget;
+  return freedomDays(data) * data.profile.dailyBudget;
 }
 
-/** Dosis no consumidas acumuladas */
+/** Dosis no consumidas acumuladas (racha actual) */
 export function dosesAvoided(data: AppData): number {
   if (!data.profile) return 0;
-  return soberDays(data) * data.profile.dosesPerDay;
+  return freedomDays(data) * data.profile.dosesPerDay;
 }
 
 /* ---------------- Hábitos y evitaciones ---------------- */

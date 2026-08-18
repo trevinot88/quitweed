@@ -9,7 +9,9 @@ import {
   CheckCircle2,
   Database,
   Download,
+  Leaf,
   Package,
+  RefreshCcw,
   Save,
   Trash2,
   Upload,
@@ -27,7 +29,15 @@ import { todayKey } from "@/lib/date";
 import type { AppData, Profile } from "@/lib/types";
 
 export function SettingsPanel() {
-  const { data, setProfile, saveHabits, saveAvoids, importData, resetAll } = useApp();
+  const {
+    data,
+    setProfile,
+    saveHabits,
+    saveAvoids,
+    importData,
+    resetAll,
+    resetProgress,
+  } = useApp();
   const profile = data?.profile;
 
 
@@ -36,6 +46,7 @@ export function SettingsPanel() {
   const [budget, setBudget] = React.useState(profile?.dailyBudget ?? 300);
   const [doses, setDoses] = React.useState(profile?.dosesPerDay ?? 1);
   const [confirmReset, setConfirmReset] = React.useState(false);
+  const [confirmResetProgress, setConfirmResetProgress] = React.useState(false);
   const [status, setStatus] = React.useState<{ type: "ok" | "err"; msg: string } | null>(null);
 
   const fileRef = React.useRef<HTMLInputElement>(null);
@@ -184,6 +195,25 @@ export function SettingsPanel() {
         <p className="mb-4 text-xs text-zinc-500">
           Elige qué actividades marcas en tu check-in de la mañana. Escribe lo que quieras: agua con sal, NAC, entrenar, meditar…
         </p>
+
+        {/* Hábito principal */}
+        <div className="mb-4 rounded-xl border border-emerald-400/20 bg-emerald-500/[0.05] p-3.5">
+          <div className="flex items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-lg">
+              🌿
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-emerald-200">
+                Free of weed <span className="ml-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">Principal</span>
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-zinc-400">
+                Es el eje principal de la app: tu objetivo central es dejar de consumir.
+                Los demás hábitos son complementarios y te ayudan a gestionar antojos y ansiedad.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <HabitEditor
           title="Hábitos"
           description="Actividades que quieres cumplir en la mañana"
@@ -248,6 +278,25 @@ export function SettingsPanel() {
         </p>
       </Card>
 
+      {/* Reiniciar progreso */}
+      <Card className="border-amber-500/25 p-5">
+        <div className="mb-2 flex items-center gap-2">
+          <RefreshCcw className="h-4 w-4 text-amber-400" />
+          <h3 className="text-sm font-semibold text-amber-200">Reiniciar progreso</h3>
+        </div>
+        <p className="mb-4 text-xs text-zinc-500">
+          Borra el historial de registros y pone tu contador de días de libertad en 0.
+          Conserva tu perfil, hábitos y configuraciones.
+        </p>
+        <Button
+          variant="outline"
+          className="w-full border-amber-500/30 text-amber-200 hover:bg-amber-500/10 hover:text-amber-100"
+          onClick={() => setConfirmResetProgress(true)}
+        >
+          <RefreshCcw className="h-4 w-4" /> RESET / Reiniciar progreso de cero
+        </Button>
+      </Card>
+
       {/* Zona de peligro */}
       <Card className="border-red-500/20 p-5">
         <h3 className="mb-1 text-sm font-semibold text-red-300">Zona de peligro</h3>
@@ -273,6 +322,36 @@ export function SettingsPanel() {
           {status.msg}
         </motion.div>
       )}
+
+      {/* Confirmación de reinicio de progreso */}
+      <Dialog open={confirmResetProgress} onOpenChange={setConfirmResetProgress}>
+        <div className="p-6 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/15 text-amber-400">
+            <RefreshCcw className="h-7 w-7" />
+          </div>
+          <h3 className="text-lg font-bold text-zinc-100">¿Reiniciar tu progreso?</h3>
+          <p className="mt-2 text-sm text-zinc-400">
+            Se borrará el historial de registros y tu contador de días de libertad volverá a 0.
+            Tu perfil y hábitos se conservan. Esta acción no se puede deshacer.
+          </p>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <Button variant="outline" onClick={() => setConfirmResetProgress(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                resetProgress();
+                setConfirmResetProgress(false);
+                setStatus({ type: "ok", msg: "Progreso reiniciado de cero ↺" });
+                setTimeout(() => setStatus(null), 2500);
+              }}
+            >
+              Sí, reiniciar
+            </Button>
+          </div>
+        </div>
+      </Dialog>
 
       {/* Confirmación de reset */}
       <Dialog open={confirmReset} onOpenChange={setConfirmReset}>

@@ -8,7 +8,7 @@ import { CheckinBanner } from "@/components/home/checkin-banner";
 import { MorningForm } from "@/components/forms/morning-form";
 import { NightForm } from "@/components/forms/night-form";
 import { useApp } from "@/context/app-context";
-import { soberDays, moneySaved, dosesAvoided, todayMorning, todayNight } from "@/lib/selectors";
+import { freedomDays, moneySaved, dosesAvoided, todayMorning, todayNight } from "@/lib/selectors";
 import { formatBreakdown, breakdown, formatMoney, isMorningWindow } from "@/lib/date";
 
 
@@ -25,7 +25,7 @@ export function HomeDashboard() {
 
   if (!data || !data.profile) return null;
 
-  const days = soberDays(data);
+  const days = freedomDays(data);
   const money = moneySaved(data);
   const doses = dosesAvoided(data);
   const morning = isMorningWindow();

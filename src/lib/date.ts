@@ -40,6 +40,13 @@ export function daysBetween(startKey: string, endKey: string): number {
   return Math.round((end - start) / 86_400_000);
 }
 
+/** Suma (o resta) días a una fecha local */
+export function addDays(d: Date, days: number): Date {
+  const out = new Date(d);
+  out.setDate(out.getDate() + days);
+  return out;
+}
+
 export interface Breakdown {
   years: number;
   months: number;
