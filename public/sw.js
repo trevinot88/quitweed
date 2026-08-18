@@ -1,5 +1,6 @@
 /* Service Worker · SobrioApp */
-const CACHE_NAME = "sobrio-app-v1";
+const CACHE_NAME = "sobrio-app-v2";
+
 const APP_SHELL = [
   "/",
   "/manifest.json",

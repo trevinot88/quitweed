@@ -38,11 +38,38 @@ const DEFAULT_DATA: AppData = {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
+/**
+ * Normaliza los datos cargados para ser compatibles con la versión actual.
+ * Perfiles v1 (sin hábitos/evitaciones personalizados) reciben los valores por defecto.
+ */
+function normalizeData(data: AppData | null | undefined): AppData {
+  if (!data || typeof data !== "object") return DEFAULT_DATA;
+  const profile = data.profile
+    ? {
+        ...data.profile,
+        habits: Array.isArray(data.profile.habits)
+          ? data.profile.habits
+          : DEFAULT_HABITS,
+        avoids: Array.isArray(data.profile.avoids)
+          ? data.profile.avoids
+          : DEFAULT_AVOIDS,
+      }
+    : null;
+  return {
+    profile,
+    records: data.records ?? {},
+  };
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { value: data, ready, set: setData } = useLocalStorage<AppData>(
+  const { value: rawData, ready, set: setData } = useLocalStorage<AppData>(
     STORAGE_KEY,
     DEFAULT_DATA
   );
+
+  // Los datos siempre normalizados (habits/avoids siempre presentes)
+  const data = useMemo(() => normalizeData(rawData), [rawData]);
+
 
   const setProfile = useCallback(
     (profile: Profile) => {

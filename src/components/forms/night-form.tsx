@@ -21,10 +21,11 @@ interface NightFormProps {
   onOpenChange: (open: boolean) => void;
   initial?: NightLog;
   onSave: (log: NightLog) => void;
-  avoids: HabitItem[];
+  avoids: HabitItem[] | undefined;
 }
 
-export function NightForm({ open, onOpenChange, initial, onSave, avoids }: NightFormProps) {
+export function NightForm({ open, onOpenChange, initial, onSave, avoids = [] }: NightFormProps) {
+
   const [sober, setSober] = React.useState(initial?.sober ?? true);
   const [craving, setCraving] = React.useState(initial?.cravingLevel ?? 2);
   const [worstMoment, setWorstMoment] = React.useState(initial?.worstMoment ?? "");

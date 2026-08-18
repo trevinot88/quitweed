@@ -31,8 +31,8 @@ export function ProgressView() {
   const stats = progressStats(data);
   const today = new Date();
 
-
   // Construir el mes actual del calendario
+
   const year = today.getFullYear();
   const month = today.getMonth();
   const monthLabel = today.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
@@ -51,14 +51,15 @@ export function ProgressView() {
   const isToday = (d: number) =>
     d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
-  const habits = profile.habits.map((h) => ({
+  const habits = (profile.habits ?? []).map((h) => ({
     ...h,
-    stat: habitCompletion(data, h.id, profile.habits),
+    stat: habitCompletion(data, h.id, profile.habits ?? []),
   }));
-  const avoids = profile.avoids.map((a) => ({
+  const avoids = (profile.avoids ?? []).map((a) => ({
     ...a,
-    stat: avoidCompletion(data, a.id, profile.avoids),
+    stat: avoidCompletion(data, a.id, profile.avoids ?? []),
   }));
+
 
   return (
     <div className="space-y-4">

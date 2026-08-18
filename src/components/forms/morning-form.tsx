@@ -20,10 +20,11 @@ interface MorningFormProps {
   onOpenChange: (open: boolean) => void;
   initial?: MorningLog;
   onSave: (log: MorningLog) => void;
-  habits: HabitItem[];
+  habits: HabitItem[] | undefined;
 }
 
-export function MorningForm({ open, onOpenChange, initial, onSave, habits }: MorningFormProps) {
+export function MorningForm({ open, onOpenChange, initial, onSave, habits = [] }: MorningFormProps) {
+
   const [mood, setMood] = React.useState(initial?.mood ?? 7);
   const [physical, setPhysical] = React.useState(initial?.physical ?? 7);
   const [intention, setIntention] = React.useState(initial?.intention ?? "");

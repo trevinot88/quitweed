@@ -43,7 +43,7 @@ export function dosesAvoided(data: AppData): number {
 /** Resuelve qué hábitos de la mañana se marcaron como hechos (compatible con v1) */
 export function morningHabitsDone(
   log: MorningLog | undefined,
-  habits: HabitItem[]
+  habits: HabitItem[] | undefined
 ): Record<string, boolean> {
   const out: Record<string, boolean> = {};
   if (!log) return out;
@@ -58,12 +58,13 @@ export function morningHabitsDone(
 /** Resuelve qué evitaciones se marcaron como evitadas */
 export function nightAvoidsDone(
   log: NightLog | undefined,
-  avoids: HabitItem[]
+  avoids: HabitItem[] | undefined
 ): Record<string, boolean> {
   const out: Record<string, boolean> = {};
   if (!log || !log.avoidsDone) return out;
   return log.avoidsDone;
 }
+
 
 export interface CompletionStat {
   /** Veces que se pudo cumplir (días con registro) */

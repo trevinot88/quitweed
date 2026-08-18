@@ -31,6 +31,9 @@ export function HomeDashboard() {
   const morning = isMorningWindow();
   const m = todayMorning(data);
   const n = todayNight(data);
+  const habits = data.profile.habits ?? [];
+  const avoids = data.profile.avoids ?? [];
+
 
   const greeting = (() => {
     const h = now.getHours();
